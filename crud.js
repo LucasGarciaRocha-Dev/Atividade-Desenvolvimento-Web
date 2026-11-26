@@ -1,13 +1,15 @@
 const { PrismaClient } = require('@prisma/client');
-
+const bcrypt = require('bcrypt');
 const prisma = new PrismaClient();
 
 async function main() {
+    const hashedPassword = await bcrypt.hash('MinhaSenha123', 12);
 
     const novoUsuario = await prisma.user.create({
         data: {
             name: 'João da Silva',
-            email: 'joaodasilva@gmail.com',
+            email:('joaodasilva@gmail.com'),
+            password: hashedPassword,
             tasks: {
                 create: [
                     { title: 'Estudar lógica de programação', completed: true },
@@ -18,7 +20,11 @@ async function main() {
         include: { tasks: true }
     });
 
-    console.log('Usuário criado com sucesso:', novoUsuario);
+    
+ const { password, ...usuarioSemSenha } = novoUsuario;
+  console.log('Usuário criado com sucesso:', usuarioSemSenha);
+  console.log('Senha incorreta confere?', await bcrypt.compare('senhaErrada', novoUsuario.password));
+  console.log('Senha correta confere?', await bcrypt.compare('MinhaSenha123', novoUsuario.password));
 
 
     const tarefas = await prisma.task.findMany({
